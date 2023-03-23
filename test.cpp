@@ -6,73 +6,14 @@
 #include <tuple>
 #include <vector>
 #include <map>
+#include "node_arc_info.hpp"
 #include <lemon/list_graph.h>
 #include <lemon/bfs.h>
 #include <lemon/path.h>
 
+
 using namespace lemon;
 using namespace std;
-
-class node_info{
-    public:
-        double lat, lon; // Latitude and longitude 
-        ListDigraph::Node node;
-    
-        //Default constructor
-        node_info() : lat(0.0), lon(0.0) {}
-        // Constructor
-        node_info(const ListDigraph::Node n,const double l=0.0, const double L=0.0): node(n),lat(l), lon(L){}
-        // Copie constructor
-        node_info(const node_info& other) : lat(other.lat), lon(other.lon), node(other.node) {}
-
-        double getLat() const{ // return latitude
-            return this->lat;
-        }
-
-        double getLon() const{ // return longitude
-            return this->lon;
-        }
-
-        ListDigraph::Node getNode() const{
-            return this->node;
-        }
-};
-
-class arc_info{
-    public:
-        int id1, id2;
-        double distance;
-        ListDigraph::Arc arc;
-        string street;
-    
-        //Default constructor
-        arc_info(): id1(0), id2(0), distance(0.0), street("???"){}
-        // Constructor
-        arc_info(const ListDigraph::Arc a , const int ID1=0, const int ID2=0, const double D=0.0, const string st="???"): arc(a), id1(ID1), id2(ID2), distance(D), street(st){}
-        // Copie constructor
-        arc_info(const arc_info& other) :id1(other.id1), id2(other.id2), distance(other.distance), street(other.street), arc(other.arc){}
-
-        int getid1() const{ // return latitude
-            return this->id1;
-        }
-
-        int getid2() const{ // return longitude
-            return this->id2;
-        }
-
-        double getDistance() const {
-            return this->distance;
-        }
-
-        ListDigraph::Arc getArc() const{
-            return this->arc;
-        }
-
-        string getStreet() const{
-            return this->street;
-        }
-
-};
 
 int 
 main(int argc, char **argv) {
@@ -81,8 +22,12 @@ main(int argc, char **argv) {
   Bfs<ListDigraph> bfs(g);
   map<int, node_info> nodes;
   map<ListDigraph::Arc, arc_info> arcs;
+  double lon_max = -100;
+  double lon_min = 0;
+  double lat_max = 0;
+  double lat_min = 100;
 
-
+  // Read the CVS file
   ifstream file("graph_dc_area.2022-03-11.txt");
   string line;
 
@@ -94,10 +39,23 @@ main(int argc, char **argv) {
             int ID;
             double LAT, LON;
             // Reads the CVS file
-            sscanf(line.c_str(), "V,%d,%lf,%lf", &ID, &LAT, &LON); // parse the line
+            sscanf(line.c_str(), "V,%d,%lf,%lf", &ID, &LON, &LAT); // parse the line
             ListDigraph::Node node = g.addNode();  // adds a new node
             node_info info = node_info(node, LAT, LON);
             nodes[ID] = info;
+            cout<< LON << "   "<< LAT<<endl;
+            if (LAT>lat_max){
+                lat_max = LAT;
+            }
+            if(LAT<lat_min){
+                lat_min = LAT;
+            }
+            if(LON>lon_max){
+                lon_max = LON;
+            }
+            if(LON<lon_min){
+                lon_min = LON;
+            }
             
         }
         else if (line[0] == 'E') { // if the line starts with E, store the values in arc vector
@@ -124,56 +82,50 @@ main(int argc, char **argv) {
     
     file.close(); // close the input file  
 
+    cout<< "Latitude max = "<< lat_max<< " latitude min = "<<lat_min<<endl;
+    cout<< "Longitude max = "<< lon_max<< " longitude min = "<<lon_min<<endl;    
+
+    double middle_lat = (lat_max + lat_min)/2;
+    double middle_lon = (lon_max + lon_min)/2;
+
+    cout << "The middle point of the map is:  "<<endl;
+    cout<< "LAT: "<< middle_lat<< endl << "LON: "<< middle_lon << endl;
   
-
-
-
-    node_info node1 = nodes[193];
-    node_info node2 = nodes[9999];
-    cout<<"Lat= " <<node2.getLat() << "    Lon=" << node2.getLon() <<endl;
-
+    // Get the bfs shotest path between two nodes
     node_info s_info = nodes[19791];
     node_info t_info = nodes[50179];  
     ListDigraph::Node s = s_info.getNode();
     ListDigraph::Node t = t_info.getNode();
     bfs.run(s);
     int dist = bfs.dist(t);
-    cout << "Distance between 19791 and 50179 is "<<dist<< " arcs" << endl;
-    //PredMapPath< ListDigraph,lemon::Bfs<>::PredMap > path = bfs.path(t);
-    //cout<< "lenght of path is"<<path.length() <<endl;
-    
-    double length;
-    ListDigraph::Arc fev=bfs.path(t).front();
-    for(int i=0; i<bfs.path(t).length(); i++){
-        arc_info arcDist_info = arcs[bfs.path(t).front()];
-        length+= arcDist_info.getDistance();
-    }
-    cout<< "Total distance is "<< length<< endl;
-    
+    cout << "The number of nodes between the nodes 19791 and 50179 is "<<dist<< " nodes" << endl;
     
 
+    // Calculate weight of the shortest path between two Nodes  
+    double length;
+    int id2_length;
+    ListDigraph::Arc arc_new = bfs.predArc(t); 
+    for(int i=0; i<bfs.path(t).length(); i++){
+        id2_length = arcs[arc_new].getid1(); 
+        arc_info arcDist_info = arcs[bfs.predArc(nodes[id2_length].getNode())];
+        arc_new = bfs.predArc(nodes[id2_length].getNode());
+        //cout<< arcDist_info.getDistance()<<endl;
+        length+= arcDist_info.getDistance();
+    }
+    cout<< "The weight of the shortest path between 19791 and 50179 is "<< length<< endl;   
+
+
+    // Get the bfs shotest path between two nodes
     node_info p_info = nodes[73964];
     node_info z_info = nodes[272851];  
     ListDigraph::Node p = p_info.getNode();
     ListDigraph::Node z = z_info.getNode();
     bfs.run(p);
     int dist2 = bfs.dist(z);
-    cout << "Distance between 73964 and 272851 is "<<dist2<< " arcs" << endl;
-
+    cout << "The number of nodes between the nodes 73964 and 272851 is " <<dist2<< " nodes" << endl;
 
 }
 
-/*
-    ListDigraph::Node x = g.addNode();
-    ListDigraph::Node y = g.addNode();
-    ListDigraph::Node z = g.addNode();
-    ListDigraph::Node l = g.addNode();
-    ListDigraph::Node m = g.addNode();
-    g.addArc(x,y);
-    g.addArc(y,z);
-    g.addArc(z,x);
-    g.addArc(y,l);
-    g.addArc(l,m);
-*/
+
 
   
