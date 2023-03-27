@@ -10,6 +10,9 @@
 #include <lemon/bfs.h>
 #include <lemon/path.h>
 
+
+
+
 using namespace lemon;
 using namespace std;
 
@@ -75,5 +78,35 @@ class arc_info{
 };
 
 
+class plan{
+private :
+    double lon_min, lon_max, lat_min, lat_max;  //lon = x, lat = y
+    double middle_lon, middle_lat;
+public:
+    plan(double lo1, double lo2, double la1, double la2) : 
+        lon_min(lo1), lon_max(lo2), lat_min(la1), lat_max(la2) {
+            middle_lon=(lon_max + lon_min)/2;
+            middle_lat=(lat_max + lat_min)/2;
+        }
+    
+    double getX(map<int, node_info> nodes, int id){
+        double R0 = 6378137.0; //earth radius  
+        node_info info = nodes[id];
+        return R0*cos(middle_lat)*(info.getLon()-middle_lon);
+    }
 
-  
+    double getY(map<int, node_info> nodes, int id){
+        double R0 = 6378137.0; //earth radius  
+        node_info info = nodes[id];
+        return R0*log2(tan(((info.getLat()-middle_lat)/2)*(M_PI_4)));
+    }
+
+    double getMiddle_lon(){
+        return middle_lon;
+    }
+
+    double getMiddle_lat(){
+        return middle_lat;
+    }
+
+};

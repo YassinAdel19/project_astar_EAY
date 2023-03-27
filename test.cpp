@@ -13,20 +13,11 @@
 #include <lemon/path.h>
 
 
+
+
 using namespace lemon;
 using namespace std;
 
-double getX(map<int, node_info> nodes, int id, double middle_lat, double middle_lon){
-    double R0 = 6378137.0; //earth radius  
-    node_info info = nodes[id];
-    return R0*cos(middle_lat)*(info.getLon()-middle_lon);
-}
-
-double getY(map<int, node_info> nodes, int id, double middle_lat, double middle_lon){
-    double R0 = 6378137.0; //earth radius  
-    node_info info = nodes[id];
-    return R0*log2(tan(((info.getLat()-middle_lat)/2)*(M_PI_4)));
-}
 
 // Get the bfs shotest path between two nodes
 int nbNode(const ListDigraph &g, map<int, node_info> nodes, int id1, int id2){
@@ -109,11 +100,10 @@ main(int argc, char **argv) {
     cout<< "Latitude max = "<< lat_max<< " latitude min = "<<lat_min<<endl;
     cout<< "Longitude max = "<< lon_max<< " longitude min = "<<lon_min<<endl;    
 
-    double middle_lat = (lat_max + lat_min)/2;
-    double middle_lon = (lon_max + lon_min)/2;
+    plan p(lon_min,lon_max,lat_min,lat_max);
 
     cout << "The middle point of the map is:  "<<endl;
-    cout<< "LAT: "<< middle_lat<< endl << "LON: "<< middle_lon << endl;
+    cout<< "LAT: "<< p.getMiddle_lat()<< endl << "LON: "<< p.getMiddle_lon() << endl;
     
 
 
@@ -135,7 +125,3 @@ main(int argc, char **argv) {
 */
 
 }
-
-
-
-  
