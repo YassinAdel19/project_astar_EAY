@@ -6,6 +6,7 @@
 #include <tuple>
 #include <vector>
 #include <map>
+#include <cmath>
 #include "node_arc_info.hpp"
 #include <lemon/list_graph.h>
 #include <lemon/bfs.h>
@@ -14,6 +15,20 @@
 
 using namespace lemon;
 using namespace std;
+
+double getX(map<int, node_info> nodes, int id, double middle_lat, double middle_lon){
+    double R0 = 6378137.0; //earth radius  
+    node_info info = nodes[id];
+    return R0*cos(middle_lat)*(info.getLon()-middle_lon);
+}
+
+double getY(map<int, node_info> nodes, int id, double middle_lat, double middle_lon){
+    double R0 = 6378137.0; //earth radius  
+    node_info info = nodes[id];
+    return R0*log2(tan(((info.getLat()-middle_lat)/2)*(M_PI_4)));
+}
+
+double
 
 int 
 main(int argc, char **argv) {
@@ -26,6 +41,7 @@ main(int argc, char **argv) {
   double lon_min = 0;
   double lat_max = 0;
   double lat_min = 100;
+  
 
   // Read the CVS file
   ifstream file("graph_dc_area.2022-03-11.txt");
@@ -90,7 +106,9 @@ main(int argc, char **argv) {
 
     cout << "The middle point of the map is:  "<<endl;
     cout<< "LAT: "<< middle_lat<< endl << "LON: "<< middle_lon << endl;
-  
+
+
+
     // Get the bfs shotest path between two nodes
     node_info s_info = nodes[19791];
     node_info t_info = nodes[50179];  
