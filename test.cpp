@@ -28,7 +28,16 @@ double getY(map<int, node_info> nodes, int id, double middle_lat, double middle_
     return R0*log2(tan(((info.getLat()-middle_lat)/2)*(M_PI_4)));
 }
 
-double
+// Get the bfs shotest path between two nodes
+int nbNode(const ListDigraph &g, map<int, node_info> nodes, int id1, int id2){
+    Bfs<ListDigraph> bfs(g);
+    node_info s_info = nodes[id1];
+    node_info t_info = nodes[id2];
+    ListDigraph::Node s = s_info.getNode();
+    ListDigraph::Node t = t_info.getNode();
+    bfs.run(s);
+    return bfs.dist(t);
+}
 
 int 
 main(int argc, char **argv) {
@@ -59,7 +68,6 @@ main(int argc, char **argv) {
             ListDigraph::Node node = g.addNode();  // adds a new node
             node_info info = node_info(node, LAT, LON);
             nodes[ID] = info;
-            cout<< LON << "   "<< LAT<<endl;
             if (LAT>lat_max){
                 lat_max = LAT;
             }
@@ -106,21 +114,14 @@ main(int argc, char **argv) {
 
     cout << "The middle point of the map is:  "<<endl;
     cout<< "LAT: "<< middle_lat<< endl << "LON: "<< middle_lon << endl;
-
-
-
-    // Get the bfs shotest path between two nodes
-    node_info s_info = nodes[19791];
-    node_info t_info = nodes[50179];  
-    ListDigraph::Node s = s_info.getNode();
-    ListDigraph::Node t = t_info.getNode();
-    bfs.run(s);
-    int dist = bfs.dist(t);
-    cout << "The number of nodes between the nodes 19791 and 50179 is "<<dist<< " nodes" << endl;
     
 
+
+    cout << "The number of nodes between the nodes 19791 and 50179 is "<<nbNode(g,nodes,19791, 50179)<< " nodes" << endl;
+    cout << "The number of nodes between the nodes 73964 and 272851 is " <<nbNode(g,nodes,73964, 272851)<< " nodes" << endl;
+
     // Calculate weight of the shortest path between two Nodes  
-    double length;
+    /*double length;
     int id2_length;
     ListDigraph::Arc arc_new = bfs.predArc(t); 
     for(int i=0; i<bfs.path(t).length(); i++){
@@ -131,16 +132,7 @@ main(int argc, char **argv) {
         length+= arcDist_info.getDistance();
     }
     cout<< "The weight of the shortest path between 19791 and 50179 is "<< length<< endl;   
-
-
-    // Get the bfs shotest path between two nodes
-    node_info p_info = nodes[73964];
-    node_info z_info = nodes[272851];  
-    ListDigraph::Node p = p_info.getNode();
-    ListDigraph::Node z = z_info.getNode();
-    bfs.run(p);
-    int dist2 = bfs.dist(z);
-    cout << "The number of nodes between the nodes 73964 and 272851 is " <<dist2<< " nodes" << endl;
+*/
 
 }
 
