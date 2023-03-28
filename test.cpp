@@ -11,13 +11,23 @@
 #include <lemon/list_graph.h>
 #include <lemon/bfs.h>
 #include <lemon/path.h>
-
-
+#include <lemon/dijkstra.h>
 
 
 using namespace lemon;
 using namespace std;
 
+double getX(map<int, node_info> nodes, int id, double middle_lat, double middle_lon){
+    double R0 = 6378137.0; //earth radius  
+    node_info info = nodes[id];
+    return R0*cos(middle_lat)*(info.getLon()-middle_lon);
+}
+
+double getY(map<int, node_info> nodes, int id, double middle_lat, double middle_lon){
+    double R0 = 6378137.0; //earth radius  
+    node_info info = nodes[id];
+    return R0*log2(tan(((info.getLat()-middle_lat)/2)*(M_PI_4)));
+}
 
 // Get the bfs shotest path between two nodes
 int nbNode(const ListDigraph &g, map<int, node_info> nodes, int id1, int id2){
@@ -30,10 +40,21 @@ int nbNode(const ListDigraph &g, map<int, node_info> nodes, int id1, int id2){
     return bfs.dist(t);
 }
 
+double dijkstraLength(const ListDigraph &g,const ListDigraph::ArcMap<double> &length, map<int, node_info> nodes, int id1, int id2){
+    ListDigraph::NodeMap<double> dist(g);
+    node_info s_info = nodes[id1];
+    node_info t_info = nodes[id2];
+    ListDigraph::Node s = s_info.getNode();
+    ListDigraph::Node t = t_info.getNode();   
+    dijkstra(g, length).distMap(dist).run(s);
+    return dist[t];
+}
+
 int 
 main(int argc, char **argv) {
 
   ListDigraph g;
+  ListDigraph::ArcMap<double> length(g);
   Bfs<ListDigraph> bfs(g);
   map<int, node_info> nodes;
   map<ListDigraph::Arc, arc_info> arcs;
@@ -92,6 +113,7 @@ main(int argc, char **argv) {
             arc_info arc1 = arc_info(arc, id1, id2, distance);
             //cout<< " id1= " << arc1.getid1()<< " id2= " << arc1.getid2() << " Distance = "<< arc1.getDistance()<<" Street: "<<endl;
             arcs[arc] = arc1;
+            length[arc] = distance;
         }
     }
     
@@ -100,15 +122,18 @@ main(int argc, char **argv) {
     cout<< "Latitude max = "<< lat_max<< " latitude min = "<<lat_min<<endl;
     cout<< "Longitude max = "<< lon_max<< " longitude min = "<<lon_min<<endl;    
 
-    plan p(lon_min,lon_max,lat_min,lat_max);
+    double middle_lat = (lat_max + lat_min)/2;
+    double middle_lon = (lon_max + lon_min)/2;
 
     cout << "The middle point of the map is:  "<<endl;
-    cout<< "LAT: "<< p.getMiddle_lat()<< endl << "LON: "<< p.getMiddle_lon() << endl;
+    cout<< "LAT: "<< middle_lat<< endl << "LON: "<< middle_lon << endl;
     
 
 
     cout << "The number of nodes between the nodes 19791 and 50179 is "<<nbNode(g,nodes,19791, 50179)<< " nodes" << endl;
     cout << "The number of nodes between the nodes 73964 and 272851 is " <<nbNode(g,nodes,73964, 272851)<< " nodes" << endl;
+
+    cout << "dist[t] = "<< dijkstraLength(g, length,nodes, 73964, 272851)<<endl;
 
     // Calculate weight of the shortest path between two Nodes  
     /*double length;
@@ -125,3 +150,7 @@ main(int argc, char **argv) {
 */
 
 }
+
+
+
+  
