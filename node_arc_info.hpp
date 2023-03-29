@@ -6,6 +6,7 @@
 #include <tuple>
 #include <vector>
 #include <map>
+#include <cmath>
 #include <lemon/list_graph.h>
 #include <lemon/bfs.h>
 #include <lemon/path.h>
@@ -98,7 +99,7 @@ public:
     double getY(map<int, node_info> nodes, int id){
         double R0 = 6378137.0; //earth radius  
         node_info info = nodes[id];
-        return R0*log2(tan(((info.getLat()-middle_lat)/2)*(M_PI_4)));
+        return R0 * log2(tan(((info.getLat()-middle_lat)/2)+(M_PI_4)));
     }
 
     double getMiddle_lon(){
@@ -110,3 +111,7 @@ public:
     }
 
 };
+
+
+
+  
