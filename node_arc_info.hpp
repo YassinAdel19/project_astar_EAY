@@ -93,13 +93,14 @@ public:
     double getX(map<int, node_info> nodes, int id){
         double R0 = 6378137.0; //earth radius  
         node_info info = nodes[id];
-        return R0*cos(middle_lat)*(info.getLon()-middle_lon);
+        return R0 * cos(middle_lat * (M_PI/180))* (info.getLon()-middle_lon) * (M_PI/180);
     }
 
     double getY(map<int, node_info> nodes, int id){
         double R0 = 6378137.0; //earth radius  
         node_info info = nodes[id];
-        return R0 * log2(tan(((info.getLat()-middle_lat)/2)+(M_PI_4)));
+        return R0 * log2(tan((((info.getLat() - middle_lat) /2.0 + 45.0)) * (M_PI/180)));
+
     }
 
     double getMiddle_lon(){
