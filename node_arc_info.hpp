@@ -90,13 +90,13 @@ public:
             middle_lat=(lat_max + lat_min)/2;
         }
     
-    double getX(map<int, node_info> nodes, int id){
+    double getX(map<int, node_info> &nodes, int id){
         double R0 = 6378137.0; //earth radius  
         node_info info = nodes[id];
         return R0 * cos(middle_lat * (M_PI/180))* (info.getLon()-middle_lon) * (M_PI/180);
     }
 
-    double getY(map<int, node_info> nodes, int id){
+    double getY(map<int, node_info> &nodes, int id){
         double R0 = 6378137.0; //earth radius  
         node_info info = nodes[id];
         return R0 * log2(tan((((info.getLat() - middle_lat) /2.0 + 45.0)) * (M_PI/180)));
@@ -115,4 +115,27 @@ public:
 
 
 
-  
+
+class node_astar{
+    private:
+        int id;
+        double weight, estimate;
+    public:
+        node_astar(int i) : id(i) , weight(0), estimate(0) {}
+        
+        void set_weight(double d){
+            weight = d;
+        }
+        double get_weight(){
+            return weight;
+        }
+        void set_estimate(double d){
+            estimate = d;
+        }
+        double get_estimate(){
+            return estimate;
+        }
+        int get_id(){
+            return id;
+        }
+};
